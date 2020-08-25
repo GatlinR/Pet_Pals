@@ -2,54 +2,38 @@ function getData(id) {
 	d3.json("data/samples.json").then(function(data){
 	//console.log(data);
 
-		var metadata = data.metadata.filter(d => d.id.toString() === id.toString())[0];
-		var display = d3.select("#sample-metadata");
+		var metadata = data.metadata.filter(s => s.id.toString() === id.toString())[0];
+    	var display = d3.select("#sample-metadata");
 		display.html("");
 		
-		Object.entries(metadata).forEach(function([key,value]) {	
-			display.append("p")
-				.text(`${key}: ${value}`);	
-		});
-	});
-}
-
-
-function barChart(id) {
-	d3.json("data/samples.json").then(function(data){
-   		var samples = data.samples.filter(d => d.id.toString() === id)[0];
-    	var sample_values = samples.sample_values.slice(0,10).reverse();
-		var otu_ids = samples.otu_ids.slice(0,10).reverse();
-		var otu_ids = otu_ids.map(d => d.toString());
-		var otu_labels = samples.otu_labels.slice(0,10).reverse();
+        var selection = display.append("ul");
+        selection.classed("list-group", true);
+		selection.classed("list-group-flush", true);
 		
-		var trace2 = {
-			x: sample_values,
-			y: otu_ids,
-			text: otu_labels,
-			type: "bar",
-			orientation: "h"
-		};
-		var data = [trace2];
-
-		Plotly.newPlot("bar", data);
+        Object.entries(metadata[0]).forEach(([key, value]) => {
+            var item = selection.append('li');
+            item.classed('list-group-item', true);
+            item.html(`${key}: ${value}`);
+        });
 	});
-};
+
+}
 
 
 function bubbleChart(id) {
 	d3.json("data/samples.json").then(function(data){
 	//console.log(data);
     
-		var samples = data.samples.filter(d => d.id.toString() === id)[0];
+		var samples = data.samples.filter(s => s.id.toString() === id)[0];
 		//console.log(samples);
 		var sample_values = samples.sample_values;
     	var otu_ids = samples.otu_ids;
-		var otu_ids = otu_ids.map(d => d.toString());
+		var otu_ids = otu_ids.map(s => s.toString());
 		var otu_labels = samples.otu_labels;
 		
 		var trace1 = {
-			y: otu_ids,
-			x: sample_values,
+			y: sample_values,
+			x: otu_ids,
 			mode: 'markers',
 			marker: {
 				color: otu_ids,
@@ -72,7 +56,7 @@ function bubbleChart(id) {
 };
 
 
-function gaugeChart(id) {
+function guageChart(id) {
 	d3.json("data/samples.json").then(function(data){
 	//console.log(data);
   		var metadata = data.metadata.filter(d => d.id.toString() === id.toString())[0];
@@ -105,6 +89,28 @@ function gaugeChart(id) {
 };
 
 
+function barChart(id) {
+	d3.json("data/samples.json").then(function(data){
+   		var samples = data.samples.filter(s => s.id.toString() === id)[0];
+    	var sample_values = samples.sample_values.slice(0,10).reverse();
+		var otu_ids = samples.otu_labels.slice(0,10).reverse();
+		var otu_ids = otu_ids.map(d => d.toString());
+		var otu_labels = samples.otu_labels.slice(0,10).reverse();
+		
+		var trace2 = {
+			x: sample_values,
+			y: otu_ids,
+			text: otu_labels,
+			type: "bar",
+			orientation: "h"
+		};
+		var data = [trace2];
+
+		Plotly.newPlot("bar", data);
+	});
+};
+
+
 function init() {
 	var dropMenu = d3.select("#selDataset");
 	d3.json("data/samples.json").then(function(data){
@@ -118,20 +124,12 @@ function init() {
 		.attr("value", function (d) { return d; })
 		.text(function (d) { return d; });
 
-		var choice = ids[0];
-		barChart(choice);
-		bubbleChart(choice);
-		gaugeChart(choice);
-		getData(choice);
+		var name = ids[0];
+		getData(ids);
+		barChart(ids);
+		bubbleChart(ids);
+		guageChart(ids);
 	});
 }
-
-
-function optionChanged(id) {
-	getData(id);
-	barChart(id);
-	gaugeChart(id);
-	bubbleChart(id);
-}
-
+	
 init();
